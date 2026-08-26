@@ -50,7 +50,7 @@ export function IssueList({ initialDate, initialIssues }: IssueListProps) {
         ) : (
           <div className="text-text-placeholder py-18 text-center">
             <div className="mb-3 text-sm">
-              이 날은 아직 정리된 이슈가 없어요
+              이 날은 아직 정리된 {cat.label} 이슈가 없어요
             </div>
           </div>
         )}

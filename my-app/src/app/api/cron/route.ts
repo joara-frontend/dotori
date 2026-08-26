@@ -16,20 +16,49 @@ import { clusterIssues } from "@/shared/lib/clusterIssues";
 
 export const maxDuration = 300;
 
+async function upsertCategoryRows(
+  supabaseAdmin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
+  rows: IssueInsert[]
+) {
+  if (rows.length === 0) return 0;
+
+  const { data, error } = await supabaseAdmin
+    .from("issues")
+    .upsert(rows, { onConflict: "source_url,published_at" })
+    .select("id");
+
+  if (error) {
+    console.error("Upsert failed:", error);
+    return 0;
+  }
+
+  for (const row of data) {
+    revalidatePath(`/${row.id}`);
+  }
+  return rows.length;
+}
+
 async function runCollection(
   supabaseAdmin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>
 ) {
-  const rows: IssueInsert[] = [];
   let quotaExhausted = false;
+  let totalInserted = 0;
+
   for (const category of CATEGORIES) {
     if (quotaExhausted) break;
+
     // items = 이 카테고리의 뉴스 기사 30개 (title, link, sourceName, publishedAt)
     const items = await fetchCategoryFeed(
       category.rssQuery,
       RSS_POOL_SIZE_PER_CATEGORY
     );
-
     const topIssues = clusterIssues(items, ISSUES_PER_CATEGORY_PER_DAY);
+
+    console.log(
+      `[${category.key}] RSS ${items.length}건 수집, 클러스터링 후 ${topIssues.length}건`
+    );
+
+    const categoryRows: IssueInsert[] = [];
 
     for (const item of topIssues) {
       if (quotaExhausted) break;
@@ -39,7 +68,7 @@ async function runCollection(
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
           const summary = await summarizeIssue(item.title, category.label);
-          rows.push({
+          categoryRows.push({
             title: item.title,
             summary_1: summary.summary_1,
             summary_2: summary.summary_2,
@@ -78,24 +107,12 @@ async function runCollection(
         await new Promise((resolve) => setTimeout(resolve, 13000));
       }
     }
+
+    totalInserted += await upsertCategoryRows(supabaseAdmin, categoryRows);
   }
 
-  const { data, error } = await supabaseAdmin
-    .from("issues")
-    .upsert(rows, { onConflict: "source_url,published_at" })
-    .select("id");
-
-  if (error) {
-    console.error("Upsert failed:", error);
-    return;
-  }
-
-  for (const row of data) {
-    revalidatePath(`/${row.id}`);
-  }
   revalidatePath("/");
-
-  console.log(`Cron collection inserted ${rows.length} issues`);
+  console.log(`Cron collection inserted ${totalInserted} issues`);
 }
 
 export async function GET(request: NextRequest) {
@@ -115,7 +132,11 @@ export async function GET(request: NextRequest) {
   // cron-job.org의 요청 타임아웃(무료 플랜 기준 30초)보다 수집 작업이
   // 오래 걸리므로, 즉시 202를 응답하고 실제 수집/요약/저장은
   // 응답 이후에도 계속 실행되도록 한다.
-  after(() => runCollection(supabaseAdmin));
+  after(() =>
+    runCollection(supabaseAdmin).catch((error) => {
+      console.error("Cron collection crashed unexpectedly:", error);
+    })
+  );
 
   return NextResponse.json({ status: "accepted" }, { status: 202 });
 }
