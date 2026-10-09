@@ -3,7 +3,7 @@
 import { CategoryTabs } from "@/features/issue-filter";
 import { IssueCard } from "@/features/issue-card";
 import { useIssueUIStore } from "@/entities/issue/store";
-import { useIssuesByDate, groupByCategory } from "@/entities/issue/api";
+import { useIssuesByDate } from "@/entities/issue/api";
 import { CATEGORY_MAP } from "@/shared/config";
 import { formatDateFull } from "@/shared/lib/formatDate";
 import type { Issue } from "@/entities/issue/types";
@@ -23,7 +23,9 @@ export function IssueList({ initialDate, initialIssues }: IssueListProps) {
   );
 
   const cat = CATEGORY_MAP[selectedCategory];
-  const currentItems = groupByCategory(issues)[selectedCategory] ?? [];
+  const currentItems = issues.filter(
+    (issue) => issue.category === selectedCategory
+  );
 
   return (
     <div>

@@ -10,20 +10,6 @@ import {
 import { cn } from "@/shared/lib/cn";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
-const MONTH_NAMES_KO = [
-  "1월",
-  "2월",
-  "3월",
-  "4월",
-  "5월",
-  "6월",
-  "7월",
-  "8월",
-  "9월",
-  "10월",
-  "11월",
-  "12월",
-];
 
 export function DateCalendar() {
   const selectedDate = useIssueUIStore((s) => s.selectedDate);
@@ -106,7 +92,7 @@ export function DateCalendar() {
               ‹
             </button>
             <div className="text-text-primary text-sm font-bold">
-              {viewYear}년 {MONTH_NAMES_KO[viewMonthIdx]}
+              {viewYear}년 {viewMonthIdx + 1}월
             </div>
             <button
               onClick={nextMonth}

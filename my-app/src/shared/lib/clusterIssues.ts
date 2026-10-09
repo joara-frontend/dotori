@@ -6,7 +6,6 @@ export function clusterIssues(items: RssItem[], limit: number) {
   // 1. 배열에서 따옴표, 괄호, 특수문자 제거하고 공백 기준으로 토큰 집합 생성
   const tokenSets = items.map((item) => {
     const cleanedTitle = item.title
-      .replace(/[“”‘’"(){}[\]<>]/g, "")
       // \w는 ASCII 전용이라 한글까지 지워지므로 유니코드 문자/숫자 기준으로 남긴다
       .replace(/[^\p{L}\p{N}\s]/gu, "")
       .toLowerCase();

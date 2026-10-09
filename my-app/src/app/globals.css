@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-:root {
+@theme {
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+
   /* Brand */
   --color-brand: #c97a3d;
   --color-brand-tint: #c97a3d1a;
@@ -35,17 +37,17 @@
   --color-border-soft: rgba(58, 42, 30, 0.08);
   --color-border-strong: rgba(58, 42, 30, 0.15);
 
-  /* Typography */
-  --font-size-2xs: 11px;
-  --font-size-xs: 12px;
-  --font-size-sm: 13px;
-  --font-size-base: 14px;
-  --font-size-md: 15px;
-  --font-size-lg: 17px;
-  --font-size-xl: 22px;
-  --font-size-2xl: 28px;
-  --font-size-3xl: 36px;
-  --font-size-4xl: 40px;
+  /* Typography (overrides Tailwind's default text-* / leading-* scale) */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 17px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+  --text-4xl: 40px;
 
   --font-weight-normal: 400;
   --font-weight-semibold: 600;
@@ -56,18 +58,6 @@
   --leading-snug: 1.35;
   --leading-normal: 1.5;
   --leading-relaxed: 1.6;
-
-  /* Spacing (semantic aliases for frequently used gap/padding/margin values —
-     named `--space-*`, not `--spacing-*`, so they don't collide with
-     Tailwind v4's own spacing scale, which backs max-w-*, w-*, gap-*, etc.) */
-  --space-2xs: 4px;
-  --space-xs: 6px;
-  --space-sm: 8px;
-  --space-md: 14px;
-  --space-lg: 16px;
-  --space-xl: 20px;
-  --space-2xl: 24px;
-  --space-3xl: 28px;
 
   /* Radius */
   --radius-sm: 8px;
@@ -80,83 +70,6 @@
   --duration-slow: 300ms;
 }
 
-@theme inline {
-  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
-
-  --color-brand: var(--color-brand);
-  --color-brand-tint: var(--color-brand-tint);
-
-  --color-cat-society: var(--color-cat-society);
-  --color-cat-society-tint: var(--color-cat-society-tint);
-  --color-cat-economy: var(--color-cat-economy);
-  --color-cat-economy-tint: var(--color-cat-economy-tint);
-  --color-cat-tech: var(--color-cat-tech);
-  --color-cat-tech-tint: var(--color-cat-tech-tint);
-  --color-cat-culture: var(--color-cat-culture);
-  --color-cat-culture-tint: var(--color-cat-culture-tint);
-
-  --color-bg: var(--color-bg);
-  --color-bg-subtle: var(--color-bg-subtle);
-  --color-footer-bg: var(--color-footer-bg);
-  --color-footer-fg: var(--color-footer-fg);
-
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-tertiary: var(--color-text-tertiary);
-  --color-text-muted: var(--color-text-muted);
-  --color-text-faint: var(--color-text-faint);
-  --color-text-placeholder: var(--color-text-placeholder);
-  --color-icon: var(--color-icon);
-
-  --color-border: var(--color-border);
-  --color-border-soft: var(--color-border-soft);
-  --color-border-strong: var(--color-border-strong);
-
-  --text-2xs: var(--font-size-2xs);
-  --text-xs: var(--font-size-xs);
-  --text-sm: var(--font-size-sm);
-  --text-base: var(--font-size-base);
-  --text-md: var(--font-size-md);
-  --text-lg: var(--font-size-lg);
-  --text-xl: var(--font-size-xl);
-  --text-2xl: var(--font-size-2xl);
-  --text-3xl: var(--font-size-3xl);
-  --text-4xl: var(--font-size-4xl);
-
-  --font-weight-normal: var(--font-weight-normal);
-  --font-weight-semibold: var(--font-weight-semibold);
-  --font-weight-bold: var(--font-weight-bold);
-  --font-weight-extrabold: var(--font-weight-extrabold);
-
-  --space-2xs: var(--space-2xs);
-  --space-xs: var(--space-xs);
-  --space-sm: var(--space-sm);
-  --space-md: var(--space-md);
-  --space-lg: var(--space-lg);
-  --space-xl: var(--space-xl);
-  --space-2xl: var(--space-2xl);
-  --space-3xl: var(--space-3xl);
-
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-pill: var(--radius-pill);
-
-  --duration-fast: var(--duration-fast);
-  --duration-base: var(--duration-base);
-  --duration-slow: var(--duration-slow);
-}
-
-body {
-  background: var(--color-bg);
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
-
 ::placeholder {
   color: var(--color-text-placeholder);
-}
-
-* {
-  box-sizing: border-box;
 }

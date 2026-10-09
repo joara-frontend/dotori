@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CATEGORY_MAP } from "@/shared/config";
 import { formatDateShort } from "@/shared/lib/formatDate";
 import type { Issue } from "@/entities/issue/types";
 
