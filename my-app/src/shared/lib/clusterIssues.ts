@@ -7,7 +7,8 @@ export function clusterIssues(items: RssItem[], limit: number) {
   const tokenSets = items.map((item) => {
     const cleanedTitle = item.title
       .replace(/[“”‘’"(){}[\]<>]/g, "")
-      .replace(/[^\w\s]/g, "")
+      // \w는 ASCII 전용이라 한글까지 지워지므로 유니코드 문자/숫자 기준으로 남긴다
+      .replace(/[^\p{L}\p{N}\s]/gu, "")
       .toLowerCase();
     const tokens = new Set(cleanedTitle.split(/\s+/).filter(Boolean));
     return tokens;

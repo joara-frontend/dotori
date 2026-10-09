@@ -16,6 +16,14 @@ import { clusterIssues } from "@/shared/lib/clusterIssues";
 
 export const maxDuration = 300;
 
+/** Vercel 로그에서 실패 원인을 바로 구분할 수 있도록 에러 종류를 요약한다. */
+function describeError(error: unknown) {
+  if (error instanceof ApiError) return `ApiError ${error.status}`;
+  if (error instanceof SyntaxError) return "JSON parse error";
+  if (error instanceof Error) return error.message;
+  return "unknown error";
+}
+
 async function upsertCategoryRows(
   supabaseAdmin: NonNullable<ReturnType<typeof createSupabaseAdminClient>>,
   rows: IssueInsert[]
@@ -62,8 +70,9 @@ async function runCollection(
 
     let categoryRows: IssueInsert[] = [];
     // 카테고리의 기사 전체를 한 번의 Gemini 호출로 배치 요약한다(무료
-    // 티어 하루 요청 한도를 아끼기 위해 기사별 호출 대신 사용). 500/502/503는
-    // Gemini API의 일시적인 문제일 수 있으므로 3초 후 최대 2회까지 재시도한다.
+    // 티어 하루 요청 한도를 아끼기 위해 기사별 호출 대신 사용). 하루 쿼터
+    // 초과(429 PerDay)를 제외한 실패는 일시적일 수 있으므로 10초, 30초
+    // 간격으로 최대 2회까지 재시도한다.
     const maxAttempts = 3;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -80,28 +89,37 @@ async function runCollection(
         }));
         break;
       } catch (error) {
-        const isRetryable =
-          error instanceof ApiError && [500, 502, 503].includes(error.status);
+        const errorKind = describeError(error);
 
-        if (error instanceof ApiError && error.status === 429) {
-          console.error(`Quota exhausted, stopping collection early:`, error);
+        // 하루 쿼터 초과면 남은 카테고리도 전부 실패하므로 즉시 중단한다.
+        // 분당 제한(PerMinute) 429는 기다리면 풀리므로 재시도 대상이다.
+        if (
+          error instanceof ApiError &&
+          error.status === 429 &&
+          error.message.includes("PerDay")
+        ) {
+          console.error(
+            `Daily quota exhausted, stopping collection early:`,
+            error
+          );
           quotaExhausted = true;
           break;
         }
 
-        if (!isRetryable || attempt === maxAttempts) {
+        if (attempt === maxAttempts) {
           console.error(
-            `Failed to summarize category "${category.key}":`,
+            `Failed to summarize category "${category.key}" [${errorKind}]:`,
             error
           );
           break;
         }
 
+        const delayMs = 10000 * 3 ** (attempt - 1);
         console.error(
-          `Retrying category "${category.key}" after transient error (attempt ${attempt}):`,
+          `Retrying category "${category.key}" in ${delayMs / 1000}s [${errorKind}] (attempt ${attempt}):`,
           error
         );
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
 
