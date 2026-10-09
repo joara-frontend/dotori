@@ -64,10 +64,11 @@
   --radius-md: 14px;
   --radius-pill: 999px;
 
-  /* Transitions */
-  --duration-fast: 120ms;
-  --duration-base: 200ms;
-  --duration-slow: 300ms;
+  /* Transitions — duration-* 유틸리티는 --transition-duration-* 네임스페이스를
+     읽는다(--duration-*로 지으면 클래스가 생성되지 않는다). */
+  --transition-duration-fast: 120ms;
+  --transition-duration-base: 200ms;
+  --transition-duration-slow: 300ms;
 }
 
 ::placeholder {

@@ -137,8 +137,16 @@ async function runCollection(
 }
 
 export async function GET(request: NextRequest) {
+  // CRON_SECRET이 없으면 비교 대상이 "Bearer undefined"가 되어 누구나
+  // 통과할 수 있으므로, 설정되지 않은 환경에서는 요청을 항상 거부한다.
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error("CRON_SECRET is not configured");
+    return NextResponse.json({ error: "Cron not configured" }, { status: 500 });
+  }
+
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

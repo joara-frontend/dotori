@@ -29,15 +29,21 @@ export async function fetchCategoryFeed(
 
   try {
     const feed = await parser.parseURL(url);
-    const items: RssItem[] = feed.items.slice(0, limit).map((item) => {
-      const { title, sourceName } = splitTitleAndSource(item.title || "");
-      return {
-        title,
-        link: item.link || "",
-        sourceName,
-        publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
-      };
-    });
+    const items: RssItem[] = feed.items
+      .map((item) => {
+        const { title, sourceName } = splitTitleAndSource(item.title || "");
+        return {
+          title,
+          link: item.link || "",
+          sourceName,
+          publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
+        };
+      })
+      // 제목·링크가 없는 항목은 요약할 수 없고, 빈 source_url끼리는 유니크 키
+      // (source_url, published_at)에서 충돌하므로 수집 단계에서 버린다.
+      // slice 앞에서 걸러야 버린 만큼 다음 기사로 limit개를 채운다.
+      .filter((item) => item.title && item.link)
+      .slice(0, limit);
     return items;
   } catch (error) {
     console.error("Error fetching RSS feed:", error);

@@ -8,6 +8,7 @@ import {
   todayDateStr,
 } from "@/shared/lib/formatDate";
 import { cn } from "@/shared/lib/cn";
+import { useNavigateToList } from "@/shared/lib/useNavigateToList";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -16,6 +17,7 @@ export function DateCalendar() {
   const calendarOpen = useIssueUIStore((s) => s.calendarOpen);
   const toggleCalendar = useIssueUIStore((s) => s.toggleCalendar);
   const setSelectedDate = useIssueUIStore((s) => s.setSelectedDate);
+  const navigateToList = useNavigateToList();
 
   const [year, month] = selectedDate.split("-").map(Number);
   const [viewYear, setViewYear] = useState(year);
@@ -122,7 +124,11 @@ export function DateCalendar() {
               return (
                 <button
                   key={i}
-                  onClick={() => !isFuture && setSelectedDate(dateStr)}
+                  onClick={() => {
+                    if (isFuture) return;
+                    setSelectedDate(dateStr);
+                    navigateToList();
+                  }}
                   disabled={isFuture}
                   className={cn(
                     "text-text-primary duration-fast h-8 cursor-pointer rounded-sm text-xs font-normal transition-colors",

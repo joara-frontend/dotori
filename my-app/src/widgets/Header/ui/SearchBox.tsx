@@ -4,6 +4,7 @@ import { useIssueUIStore } from "@/entities/issue/store";
 import { useSearchIssues } from "@/entities/issue/api";
 import { CATEGORY_MAP } from "@/shared/config";
 import { formatDateShort } from "@/shared/lib/formatDate";
+import { useNavigateToList } from "@/shared/lib/useNavigateToList";
 
 export function SearchBox() {
   const searchOpen = useIssueUIStore((s) => s.searchOpen);
@@ -11,6 +12,7 @@ export function SearchBox() {
   const toggleSearch = useIssueUIStore((s) => s.toggleSearch);
   const setSearchQuery = useIssueUIStore((s) => s.setSearchQuery);
   const jumpToResult = useIssueUIStore((s) => s.jumpToResult);
+  const navigateToList = useNavigateToList();
 
   const { data: results = [] } = useSearchIssues(searchQuery);
   const showResults = searchOpen && searchQuery.trim().length > 0;
@@ -57,7 +59,10 @@ export function SearchBox() {
               return (
                 <button
                   key={r.id}
-                  onClick={() => jumpToResult(r.published_at, r.category)}
+                  onClick={() => {
+                    jumpToResult(r.published_at, r.category);
+                    navigateToList();
+                  }}
                   className="border-border-soft duration-base hover:bg-bg-subtle block w-full cursor-pointer border-b px-4 py-3.5 text-left transition-colors"
                 >
                   <div className={`text-2xs mb-1 font-bold ${cat.textClass}`}>
